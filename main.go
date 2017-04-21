@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/aws"
+	"encoding/json"
 )
 
 func main() {
@@ -18,9 +19,13 @@ func main() {
 	app.Name        = "dynostore"
 	app.Usage       = ""
 	app.UsageText   = "dynostore --put --key <key> --value <value>\n   dynostore --get --key <key>\n   dynostore --getall --key <key>"
-	fmt.Printf("%+v\n", app)
 
 	app.Flags = []cli.Flag {
+		cli.StringFlag{
+			Name: "output",
+			Value: "text",
+			Usage: "json | text. only for getall option",
+		},
 		cli.StringFlag{
 			Name: "region",
 			Value: "us-east-1",
@@ -61,14 +66,13 @@ func main() {
 		db := dynamodb.New(sess)
 		if c.Bool("get") && c.String("key") != "" {
 			// get the key!
-			fmt.Println(store.Get(db, c.String("table"), c.String("key")))
+			value := store.Get(db, c.String("table"), c.String("key"))
+			print(c.String("output"), []string{c.String("key")}, []string{value})
 		}
 		if c.Bool("getall") && c.String("key") != "" {
-			
+			// get all keys-values under key
 			keys, values := store.GetAll(db, c.String("table"), c.String("key"))
-			for i := 0; i < len(keys); i++ {
-				fmt.Printf("%s=%s\n", keys[i], values[i])
-			}
+			print(c.String("output"), keys, values)
 		}
 		if c.Bool("put") && c.String("value") != "" && c.String("key") != "" {
 			// put the key-value!
@@ -79,14 +83,39 @@ func main() {
 				fmt.Printf("Successfully put key-value:\n\t%s:\t%s\n", c.String("key"), c.String("value"))
 			}
 		}
-
-		// fmt.Println("get:     ", c.Bool("get"))
-		// fmt.Println("put:     ", c.Bool("put"))
-		// fmt.Println("table:   ", c.String("table"))
-		// fmt.Println("key:     ", c.String("key"))
-		// fmt.Println("value:   ", c.String("value"))
 		return err
 	}
 
 	app.Run(os.Args)
+}
+
+func print(output string, keys, values []string) {
+	switch output {
+	case "json": 
+		printJSON(keys, values)
+	case "text":
+		printText(keys, values)
+	default:
+		printText(keys, values)
+	}
+}
+
+func printJSON(keys, values []string) {
+	list := make([]map[string]string, 0)
+	for i := 0; i < len(keys); i++ {
+		tmp := map[string]string{"key": keys[i], "value": values[i]}
+		list = append(list, tmp)
+	}
+	raw, err := json.Marshal(list)
+	if err != nil {
+		// print something
+		return
+	}
+	fmt.Printf("%s", raw)
+}
+
+func printText(keys, values []string) {
+	for i := 0; i < len(keys); i++ {
+		fmt.Printf("%s=%s\n", keys[i], values[i])
+	}
 }

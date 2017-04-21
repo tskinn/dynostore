@@ -14,6 +14,12 @@ import (
 func main() {
 	app := cli.NewApp()
 
+	app.Description = "A simple key-value store cli for dynamodb"
+	app.Name        = "dynostore"
+	app.Usage       = ""
+	app.UsageText   = "dynostore --put --key <key> --value <value>\n   dynostore --get --key <key>\n   dynostore --getall --key <key>"
+	fmt.Printf("%+v\n", app)
+
 	app.Flags = []cli.Flag {
 		cli.StringFlag{
 			Name: "region",

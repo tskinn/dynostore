@@ -7,13 +7,18 @@ aws dynamodb create-table --table-name dynostore --attribute-definitions Attribu
 
 ```
 NAME:
-   dynostore - A new cli application
+   dynostore
 
 USAGE:
-   dynostore [global options] command [command options] [arguments...]
+   dynostore --put --key <key> --value <value>
+   dynostore --get --key <key>
+   dynostore --getall --key <key>
 
 VERSION:
    0.0.0
+
+DESCRIPTION:
+   A simple key-value store cli for dynamodb
 
 COMMANDS:
      help, h  Shows a list of commands or help for one command

@@ -67,7 +67,9 @@ func main() {
 		if c.Bool("get") && c.String("key") != "" {
 			// get the key!
 			value := store.Get(db, c.String("table"), c.String("key"))
-			print(c.String("output"), []string{c.String("key")}, []string{value})
+			if value != "" {
+				print(c.String("output"), []string{c.String("key")}, []string{value})
+			}
 		}
 		if c.Bool("getall") && c.String("key") != "" {
 			// get all keys-values under key
